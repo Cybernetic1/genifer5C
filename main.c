@@ -1,51 +1,95 @@
+// Train Genifer to convert Chinese texts to Cantonese texts
+// ==========================================================
+// Cantonese is a dialect of Chinese very close to standard Chinese, so only minor
+// transliterations are required to turn Chinese into Cantonese.
+
 // TO-DO:
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <locale.h>
+#include <wchar.h>
 
-char inChars[1024];
-char outChars[1024];
+// List of Chinese characters that are recognized by the system
+// Chinese characters not in these lists are considered "don't care"
+wchar_t inChars[1024] = L"";
+wchar_t outChars[1024] = L"";
+// index to the above arrays
+int inCharsNum = 0;
+int outCharsNum = 0;
 
 // *******************read training data and testing data**********************
 
-void getTrainingAndTestData(int argc, char **path)
+void addInChars(wchar_t *newStr)
 	{
-	if(argc != 3)
+	for (int i = 0; i < wcslen(newStr); ++i)
 		{
-		printf("Usage: program training_data_file testing_data_file\n");
-		exit(0);
+		wchar_t c = newStr[i];
+		if (wcschr(inChars, c) == NULL)
+			{
+			inChars[inCharsNum] = c;
+			inCharsNum++;
+			inChars[inCharsNum] = '\0';
+			}
 		}
+	}
 
-	FILE *fp1, *fp2;
-	if((fp1 = fopen(path[1], "r")) == NULL)
+void addOutChars(wchar_t *newStr)
+	{
+	for (int i = 0; i < wcslen(newStr); ++i)
 		{
-		printf("cannot open %s\n", path[1]);
+		wchar_t c = newStr[i];
+		if (wcschr(outChars, c) == NULL)
+			{
+			outChars[outCharsNum] = c;
+			outCharsNum++;
+			outChars[outCharsNum] = '\0';
+			}
+		}
+	}
+
+void find_unique_chars()
+	{
+	wchar_t s[1024];
+
+	wprintf(L"Finding unique characters...\n");
+
+	FILE *fp1;
+	if((fp1 = fopen("/home/yky/NetBeansProjects/conceptual-keyboard/training-set.txt", "r")) == NULL)
+		{
+		printf("cannot open training-set.txt\n");
 		exit(1);
 		}
-	if((fp2 = fopen(path[2], "r")) == NULL)
-		{
-		printf("cannot open %s\n", path[2]);
-		exit(1);
+
+	while (fwscanf(fp1, L"%S", s) > 0) {
+		wprintf(s);
+		wprintf(L"\n");
+		addInChars(s);
+
+		fwscanf(fp1, L"%S", s);
+		wprintf(s);
+		wprintf(L"\n");
+		addOutChars(s);
 		}
 
-	int i = 0;
-	int num1, num2;
-	while(i < 800)
-		{
-		fscanf(fp1, "%d %d %lf %lf", &num1, &num2);
-		fscanf(fp2, "%d %d %lf %lf", &num1, &num2);
-		i++;
-		}
 	fclose(fp1);
-	fclose(fp2);
+
+	wprintf(inChars);
+	wprintf(L"\n");
+	wprintf(outChars);
+	wprintf(L"\n");
 	}
 
 //**************************main function***********************//
 
-int main2(int argc, char** argv)
+int main(int argc, char** argv)
 	{
+    setlocale(LC_ALL, "");
+	wprintf(L"*** 欢迎使用珍妮花 5.3 ***\n\n");		// "Welcome to Genifer 5.3"
 
-	//output data to a file
+	find_unique_chars();
+
+	/*output data to a file
 	FILE *fout;
 	if ((fout = fopen("randomtest_1.txt", "w")) == NULL)
 		{
@@ -54,6 +98,7 @@ int main2(int argc, char** argv)
 		}
 
 	fclose(fout);
+	*/
 
 	return 0;
 	}

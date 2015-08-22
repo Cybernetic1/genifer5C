@@ -207,7 +207,7 @@ double relativeError(double *error, int len)
 
 //**************************main function***********************//
 
-int main(int argc, char** argv)
+int main2(int argc, char** argv)
 {
 	extern SDL_Renderer* newWindow();
 
