@@ -31,7 +31,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="main.c">
+		<Unit filename="genifer5c.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions>

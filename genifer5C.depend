@@ -1,0 +1,14 @@
+# depslib dependency file v1.0
+1440237254 source:/home/yky/genifer/genifer5C/main.c
+	<stdio.h>
+	<stdlib.h>
+
+1440237404 source:/home/yky/genifer/genifer5C/genifer5c.c
+	<stdio.h>
+	<stdlib.h>
+	<stdbool.h>
+	<math.h>
+	<assert.h>
+	<time.h>
+	<SDL2/SDL.h>
+
