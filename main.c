@@ -4,6 +4,8 @@
 // transliterations are required to turn Chinese into Cantonese.
 
 // TO-DO:
+// 1. structure of K is fixed: K = in-word, in-strength, speak-strength, internal, out-word
+// 2.
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -17,7 +17,7 @@ SDL_Renderer *newWindow(void) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
         printf("SDL_Init Error: %s \n", SDL_GetError());
-        return 1;
+        return NULL;
     }
 
     SDL_Window *win = SDL_CreateWindow("?", 10, 10, 800, 900, SDL_WINDOW_SHOWN);
@@ -25,7 +25,7 @@ SDL_Renderer *newWindow(void) {
     {
         printf("SDL_CreateWindow Error: %s \n", SDL_GetError());
         SDL_Quit();
-        return 1;
+        return NULL;
     }
 
     SDL_Renderer *gRenderer = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
@@ -34,7 +34,7 @@ SDL_Renderer *newWindow(void) {
         SDL_DestroyWindow(win);
         printf("SDL_CreateRenderer Error: %s \n", SDL_GetError());
         SDL_Quit();
-        return 1;
+        return NULL;
     }
 
     return gRenderer;
@@ -46,6 +46,7 @@ SDL_Renderer *newWindow(void) {
 void rect(SDL_Renderer* gfx, int x, int y, int w, int h, float r, float g, float b) {
     rectI(gfx, x, y, w, h, f2i(r), f2i(g), f2i(b) );
 }
+
 void rectI(SDL_Renderer* gfx, int x, int y, int w, int h, int r, int g, int b) {
     SDL_Rect fillRect = { x, y, w, h };
     SDL_SetRenderDrawColor( gfx, r, g, b, 0xFF );
@@ -200,5 +201,7 @@ int test_SDL()
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
     SDL_Quit();
+
+    return 0;
 }
 

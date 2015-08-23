@@ -1,26 +1,30 @@
 
 //**********************struct for NEURON**********************************//
 typedef struct NEURON
-{
+	{
     double input;
     double output;
     double *weights;
     double delta;
     double error;
-} NEURON;
+	} NEURON;
 
 //**********************struct for LAYER***********************************//
 typedef struct LAYER
-{
+	{
     int numberOfNeurons;
     NEURON *neurons;
-} LAYER;
+	} LAYER;
 
 //*********************struct for NNET************************************//
 typedef struct NNET
-{
+	{
     double *inputs;
     int numberOfLayers;
     LAYER *layers;
-} NNET; //neural network
+	} NNET; //neural network
+
+#define dim_K 10			// dimension of cognitive state vector K
+
+double K[dim_K];
 
