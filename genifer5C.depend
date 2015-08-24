@@ -20,11 +20,21 @@
 	<SDL2/SDL.h>
 	"RNN.h"
 
-1440305110 /home/yky/genifer/genifer5C/RNN.h
+1440330694 /home/yky/genifer/genifer5C/RNN.h
 
 1440242666 source:/home/yky/genifer/genifer5C/main.cpp
 	<stdio.h>
 	<stdlib.h>
 	<locale.h>
 	<wchar.h>
+
+1440392119 source:/home/yky/genifer/genifer5C/back-propagation.c
+	<stdio.h>
+	<stdlib.h>
+	<stdbool.h>
+	<math.h>
+	<assert.h>
+	<time.h>
+	<SDL2/SDL.h>
+	"RNN.h"
 

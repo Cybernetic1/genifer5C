@@ -1,6 +1,9 @@
 // TO-DO:
-// 3. hook up with RL -- needs ANN for Q
-// 4. test with small problem with rewards
+// * hook up with RL -- needs ANN for Q
+// * the calculation of "error" in back-prop is unclear
+
+// TO-DO: (Cantonese task)
+// * need vector representation for individual words
 
 // TODO (yky#1#): There is a convergence problem -- it almost always converges and really quickly
 
@@ -20,19 +23,13 @@
 #define MAX_EPOCHS 20		// maximum epochs
 #define RECURRENCE 10		// RNN acts on K n times
 
-#define lastLayer (numberOfLayers - 1)
-
 //********sigmoid function and randomWeight generator********************//
 
 double sigmoid(double v)
-	{
     return 1 / (1 + exp(-v));
-	}
 
 double randomWeight()	//random weight generator between -0.5 ~ 0.5
-	{
     return ((int)rand() % 100000) / (float) 100000 - 0.5;
-	}
 
 //****************************create neuron network*********************//
 
@@ -101,6 +98,8 @@ void feedforward(NNET *net, double *K)
 		}
 	}
 
+#define LastLayer (numberOfLayers - 1)
+
 double calculateError(NNET *net, double *Y)
 	{
     // calculate mean square error;
@@ -109,19 +108,21 @@ double calculateError(NNET *net, double *Y)
 
     int numberOfLayers = net->numberOfLayers;
     // This means each output neuron corresponds to a classification label --YKY
-    for(i = 0; i < net->layers[lastLayer].numberOfNeurons; i++)
+    for(int i = 0; i < net->layers[LastLayer].numberOfNeurons; i++)
     	{
     	//error = desired_value - output
-    	double error = Y[i] - net->layers[lastLayer].neurons[i].output;
-    	net->layers[lastLayer].neurons[i].error = error;
+    	double error = Y[i] - net->layers[LastLayer].neurons[i].output;
+    	net->layers[LastLayer].neurons[i].error = error;
     	sumOfSquareError += error * error / 2;
     	}
-    double mse = sumOfSquareError / net->layers[lastLayer].numberOfNeurons;
+    double mse = sumOfSquareError / net->layers[LastLayer].numberOfNeurons;
     return mse;	 //return the root of mean square error
 	}
 
 
 //**************************backpropagation***********************//
+
+#define LastLayer (numberOfLayers - 1)
 
 void backpropagation(NNET *net)
 	{
@@ -130,12 +131,12 @@ void backpropagation(NNET *net)
     int numberOfLayers = net->numberOfLayers;
 
     //calculate delta for output layer
-    for (i = 0; i < net->layers[lastLayer].numberOfNeurons; i++)
+    for (i = 0; i < net->layers[LastLayer].numberOfNeurons; i++)
 		{
-        double output = net->layers[lastLayer].neurons[i].output;
-        double error = net->layers[lastLayer].neurons[i].error;
+        double output = net->layers[LastLayer].neurons[i].output;
+        double error = net->layers[LastLayer].neurons[i].error;
         //for output layer, delta = y(1-y)error
-        net->layers[lastLayer].neurons[i].delta = output * (1 - output) * error;
+        net->layers[LastLayer].neurons[i].delta = output * (1 - output) * error;
 		}
 
     //calculate delta for hidden layers
@@ -185,23 +186,16 @@ double relativeError(double *error, int len)
     int start1 = len - 20;
     int start2 = len - 10;
 
-    double error1 = 0;
-    double error2 = 0;
-
-    int i;
+    double error1, error2 = 0;
 
     //calculate the average of the first 10 errors
-    for (i = start1; i < start1 + 10; i++)
-		{
+    for (int i = start1; i < start1 + 10; i++)
         error1 += error[i];
-		}
     double averageError1 = error1 / 10;
 
     //calculate the average of the second 10 errors
-    for (i = start2; i < start2 + 10; i++)
-		{
+    for (int i = start2; i < start2 + 10; i++)
         error2 += error[i];
-		}
     double averageError2 = error2 / 10;
 
     double relativeErr = (averageError1 - averageError2) / averageError1;
@@ -211,7 +205,7 @@ double relativeError(double *error, int len)
 // Each entry of training data consists of a K input value and a desired K
 // output value.
 
-#define DATASIZE	// number of training / testing examples
+#define DATASIZE 100	// number of training / testing examples
 
 double trainingIN[DATASIZE][dim_K];
 double trainingOUT[DATASIZE][dim_K];
@@ -222,7 +216,7 @@ double testingOUT[DATASIZE][dim_K];
 void read_trainers()
 	{
 	//open training file
-	FILE *fp1, *fp2. *fp3, *fp4;
+	FILE *fp1, *fp2, *fp3, *fp4;
 
     if ((fp1 = fopen("training-set-in.txt", "r")) == NULL)
 		{ fprintf(stderr, "Cannot open training-set-in.\n"); exit(1); }
@@ -234,7 +228,7 @@ void read_trainers()
 		{ fprintf(stderr, "Cannot open testing-set-out.\n"); exit(1); }
 
 	for (int i = 0; i < DATASIZE; ++i)
-		for (int j = 0; j < dim_K; ++ j)
+		for (int j = 0; j < dim_K; ++j)
 			{
 			fscanf(fp1, "%lf", &trainingIN[i][j]);
 			fscanf(fp2, "%lf", &trainingOUT[i][j]);
@@ -246,6 +240,13 @@ void read_trainers()
 	}
 
 //**************************main function***********************//
+// Main algorithm:
+// Input is copied into K.
+// Desired output is K*.
+// Do forward propagation (recurrently) a few times.
+// Output is K'.  Error is K'-K*.
+// Use back-prop to reduce this error.
+// Repeat.
 
 int train()
 	{
@@ -257,7 +258,7 @@ int train()
     int neuronsOfLayer[4] = {10, 14, 13, 10};
 
     //read training data and testing data from file
-    // getTrainingAndTestData(argc, argv, training_data, testing_data);
+    read_trainers();
 
     //create neural network for backpropagation
     createNeuronNetwork(Net, numberOfLayers, neuronsOfLayer);
@@ -272,18 +273,8 @@ int train()
     //output data to a file
     FILE *fout;
     if ((fout = fopen("randomtest-1.txt", "w")) == NULL)
-		{
-        fprintf(stderr, "file open failed.\n");
-        exit(1);
-		}
+		{ fprintf(stderr, "file open failed.\n"); exit(1); }
 
-	// Main algorithm:
-	// Input is copied into K.
-	// Desired output is K*.
-	// Do forward propagation (recurrently) a few times.
-	// Output is K'.  Error is K'-K*.
-	// Use back-prop to reduce this error.
-	// Repeat.
     do		// Loop over all epochs
 		{
         // double squareErrorSum = 0;
@@ -300,13 +291,13 @@ int train()
 				{
 				feedforward(Net, K);
 
+				calculateError(Net, trainingOUT[i]);
+				backpropagation(Net);
+
 				// copy output to input
 				for (int k = 0; k < dim_K; ++k)
-					K[k] = Net->layers[lastLayer].neurons[k].output;
+					K[k] = Net->layers[LastLayer].neurons[k].output;
 				}
-
-			calculateError();
-			backpropagation(Net);
 			}
 
         // error[maxlen] = sqrt(squareErrorSum / DATASIZE);
