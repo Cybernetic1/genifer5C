@@ -108,7 +108,7 @@ double calculateError(NNET *net, double Y[])
 
     int numberOfLayers = net->numberOfLayers;
     // This means each output neuron corresponds to a classification label --YKY
-    for(int i = 0; i < net->layers[LastLayer].numberOfNeurons; i++)
+    for (int i = 0; i < net->layers[LastLayer].numberOfNeurons; i++)
     	{
     	//error = desired_value - output
     	double error = Y[i] - net->layers[LastLayer].neurons[i].output;

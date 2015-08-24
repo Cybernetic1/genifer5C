@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <math.h>https://www.facebook.com/groups/374893512699081/452525198269245/?ref=notif&notif_t=group_activity
+#include <math.h>
 #include <assert.h>
 #include <time.h>
 // #include <SDL2/SDL.h>
@@ -59,10 +59,11 @@ void init_Qlearn()
 // We make the state transition from K to K', getting reward R.
 // ---- (Part 2) Learning ----
 // Then we can use R to update the Q value via:
-//			Q(K,K') += η { R + γ max_a Q(K,K') }.
+//			Q(K,K') += η { R + γ max_a Q(K',a) }.
 // So the above is a ΔQ value that needs to be added to Q(K,K').
 // The Q-net computes Q(K,K'); its output should be adjusted by ΔQ.
 // Thus we use back-prop to adjust the weights in Q-net to achieve this.
+// ==============================================================
 
 // (Part 1) Acting:
 // Find K' that maximizes Q(K,K')
@@ -74,20 +75,41 @@ void Q_act(double K[])
 
 	// Go that direction a bit.
 
-	// If change is smaller than threshold then stop.
+	// If change is smaller than threshold then stop, return optimal K'.
+	}
+
+// Find maximum Q value at state K
+double *find_maxQ(double K[])
+	{
 	}
 
 // (Part 2) Learning:
 // Invoke ordinary back-prop to learn Q.
-// On entry, we are given K, K', R, and the old Q value.
-void Q_learn(double K[], double K2[], double R, double oldQ)
+// On entry, we have just made a transition K1 -> K2 with maximal Q(K1, a: K1->K2)
+// and gotten a reward R(K1->K2).
+// We need to calculate the max value of Q(K2,a) which, beware, is from the NEXT state K2.
+// We know old Q(K1,K2), but it is now adjusted to Q += ΔQ, thus the "error" for back-prop
+// is ΔQ.
+void Q_learn(double K1[], double K2[], double R, double oldQ)
 	{
-	feedforward(Net, K);
+	#define Gamma	0.05
+	#define Eta		0.1
 
-	calculateError(Net, trainingOUT[i]);
-	backpropagation(Net);
+	// Calculate ΔQ = η { R + γ max_a Q(K2,a) }
+	double maxQ = find_maxQ(K2);
+	double dQ[dim_K];
+	for (k = 0; k < dim_K; ++k)
+		dQ[k] = Eta * (R + Gamma * maxQ[k] );
 
-	// copy output to input
+	// Adjust old Q value
 	for (int k = 0; k < dim_K; ++k)
-		K[k] = Net->layers[LastLayer].neurons[k].output;
+		oldQ[k] += dQ[k];
+	// Use dQ as the error for back-prop
+	#define LastLayer (numberOfLayers - 1)
+    for (int i = 0; i < Qnet->layers[LastLayer].numberOfNeurons; i++)
+    	Qnet->layers[LastLayer].neurons[i].error = dQ[i];
+
+	// Invoke back-prop a few times (perhaps this would make the learning effect stronger?)
+	for (int i = 0; i < 5; ++i)
+		backpropagation(Qnet);
 	}
