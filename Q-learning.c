@@ -14,14 +14,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <math.h>
+#include <math.h>https://www.facebook.com/groups/374893512699081/452525198269245/?ref=notif&notif_t=group_activity
 #include <assert.h>
 #include <time.h>
-#include <SDL2/SDL.h>
+// #include <SDL2/SDL.h>
 
 #include "RNN.h"
-
-#define ETA 0.01			// learning rate
 
 extern double sigmoid(double v);
 
@@ -35,85 +33,61 @@ extern double calculateError(NNET *net, double *Y);
 
 extern void backpropagation(NNET *net);
 
-//**************************main function***********************//
-// Algorithm:
-// At some point in the main algorithm, we have a current K value, and a
+//************************** prepare Q-net ***********************//
+NNET *Qnet;
 
-int Qlearn()
+void init_Qlearn()
 	{
-    NNET *Net = (NNET *)malloc(sizeof(NNET));
-    int numberOfLayers = 3;
-    //the first layer -- input layer
-    //the last layer -- output layer
-    // int neuronsOfLayer[5] = {2, 3, 4, 4, 4};
-    int neuronsOfLayer[3] = {20, 20, 1};
+	int numberOfLayers = 3;
+	//the first layer -- input layer
+	//the last layer -- output layer
+	// int neuronsOfLayer[5] = {2, 3, 4, 4, 4};
+	int neuronsOfLayer[3] = {20, 20, 1};
 
+	Qnet = (NNET*) malloc(sizeof(NNET));
     //create neural network for backpropagation
-    createNeuronNetwork(Net, numberOfLayers, neuronsOfLayer);
-
-    int maxlen = 0;
-    int epoch = 1;
+    createNeuronNetwork(Qnet, numberOfLayers, neuronsOfLayer);
 
     // SDL_Renderer *gfx = newWindow();		// create graphics window
+	}
 
-    //output data to a file
-    FILE *fout;
-    if ((fout = fopen("randomtest-1.txt", "w")) == NULL)
-		{ fprintf(stderr, "file open failed.\n"); exit(1); }
+//************************** Q-learning ***********************//
+// Algorithm:
+// ---- (Part 1) Acting ----
+// At some point in the main algorithm, control is passed here.
+// At current state K, We pick an optimal action according to Q.
+// We make the state transition from K to K', getting reward R.
+// ---- (Part 2) Learning ----
+// Then we can use R to update the Q value via:
+//			Q(K,K') += η { R + γ max_a Q(K,K') }.
+// So the above is a ΔQ value that needs to be added to Q(K,K').
+// The Q-net computes Q(K,K'); its output should be adjusted by ΔQ.
+// Thus we use back-prop to adjust the weights in Q-net to achieve this.
 
-	// Main algorithm:
-	// Input is copied into K.
-	// Desired output is K*.
-	// Do forward propagation (recurrently) a few times.
-	// Output is K'.  Error is K'-K*.
-	// Use back-prop to reduce this error.
-	// Repeat.
-    do		// Loop over all epochs
-		{
-        // double squareErrorSum = 0;
+// (Part 1) Acting:
+// Find K' that maximizes Q(K,K')
+// Method: numerical differentiation to find gradient of dQ/dW, where W = weights.
+//		   Perhaps with multiple random restarts
+void Q_act(double K[])
+	{
+	// Find steepest direction of dQ/dW.
 
-		// Loop over all training data
-		for (int i = 0; i < DATASIZE; ++i)
-			{
-			// Write input value to K
-			for (int k = 0; k < dim_K; ++k)
-				K[k] = trainingIN[i][k];
+	// Go that direction a bit.
 
-			// Let RNN act on K n times
-			for (int j = 0; j < RECURRENCE; j++)
-				{
-				feedforward(Net, K);
+	// If change is smaller than threshold then stop.
+	}
 
-				calculateError(Net, trainingOUT[i]);
-				backpropagation(Net);
+// (Part 2) Learning:
+// Invoke ordinary back-prop to learn Q.
+// On entry, we are given K, K', R, and the old Q value.
+void Q_learn(double K[], double K2[], double R, double oldQ)
+	{
+	feedforward(Net, K);
 
-				// copy output to input
-				for (int k = 0; k < dim_K; ++k)
-					K[k] = Net->layers[LastLayer].neurons[k].output;
-				}
-			}
+	calculateError(Net, trainingOUT[i]);
+	backpropagation(Net);
 
-        // error[maxlen] = sqrt(squareErrorSum / DATASIZE);
-        //test network
-        // printf(		  "%d  \t %lf\t %lf\n", epoch, 0.0f);
-        printf("%03d:", epoch);
-        for (int i = 0; i < dim_K; ++i)
-            printf(" %lf", K[i]);
-        printf("\n");
-        // fprintf(fout, "%d", epoch);
-        maxlen++;
-        epoch++;
-
-        // drawNetwork(Net, gfx);
-        // SDL_Delay(1000 /* milliseconds*/);
-
-		}
-    while(maxlen < MAX_EPOCHS);
-
-    fclose(fout);
-    free(Net);
-
-    // plot_rectangles(gfx); //keep the window open
-
-    return 0;
+	// copy output to input
+	for (int k = 0; k < dim_K; ++k)
+		K[k] = Net->layers[LastLayer].neurons[k].output;
 	}

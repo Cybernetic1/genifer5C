@@ -69,7 +69,7 @@ void createNeuronNetwork(NNET *net, int numberOfLayers, int *neuronsOfLayer)
 
 //****************************feed forward***************************//
 
-void feedforward(NNET *net, double *K)
+void feedforward(NNET *net, double K[])
 	{
     //set the output of input layer
     //two inputs x1 and x2
@@ -100,7 +100,7 @@ void feedforward(NNET *net, double *K)
 
 #define LastLayer (numberOfLayers - 1)
 
-double calculateError(NNET *net, double *Y)
+double calculateError(NNET *net, double Y[])
 	{
     // calculate mean square error;
     // desired value = K* = trainingOUT
@@ -177,7 +177,7 @@ void backpropagation(NNET *net)
 // relative error = |average of second 10 errors : average of first 10 errors - 1|
 // It is 0 if the errors stay constant, non-zero if the errors are changing rapidly
 // these errors are from the training set --YKY
-double relativeError(double *error, int len)
+double relativeError(double error[], int len)
 	{
     len = len - 1;
     if (len < 20)
@@ -239,14 +239,18 @@ void read_trainers()
 	fclose(fp1); fclose(fp2); fclose(fp3); fclose(fp4);
 	}
 
-//**************************main function***********************//
-// Main algorithm:
-// Input is copied into K.
-// Desired output is K*.
-// Do forward propagation (recurrently) a few times.
-// Output is K'.  Error is K'-K*.
-// Use back-prop to reduce this error.
-// Repeat.
+//**************************main algorithm***********************//
+// Main loop:
+// 		----- RNN part -----
+//		Input is copied into K.
+//		Desired output is K*.
+//		Do forward propagation (recurrently) a few times.
+//		Output is K'.  Error is K'-K*.
+//		Use back-prop to reduce this error.
+//		----- RL part -----
+//		Use Q value to choose an optimal action, taking K' to K''.
+//		Invoke Q-learning, using the reward to update Q
+// Repeat
 
 int train()
 	{
@@ -319,6 +323,8 @@ int train()
 
     fclose(fout);
     free(Net);
+    extern NNET *Qnet;
+    free(Qnet);
 
     plot_rectangles(gfx); //keep the window open
 
