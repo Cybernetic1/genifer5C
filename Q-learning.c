@@ -24,16 +24,16 @@
 extern double sigmoid(double v);
 extern double randomWeight();
 extern void createNeuronNetwork(NNET *net, int numberOfLayers, int *neuronsOfLayer);
-extern void feedforward(NNET *net, double *K);
+extern void forward_prop(NNET *, int, double *);
 extern double calculateError(NNET *net, double *Y);
-extern void backpropagation(NNET *net);
+extern void backpropagation(NNET *);
 
 //************************** prepare Q-net ***********************//
 NNET *Qnet;
 
 void init_Qlearn()
 	{
-	int numberOfLayers = 3;
+	int numLayers = 3;
 	//the first layer -- input layer
 	//the last layer -- output layer
 	// int neuronsOfLayer[5] = {2, 3, 4, 4, 4};
@@ -41,7 +41,7 @@ void init_Qlearn()
 
 	Qnet = (NNET*) malloc(sizeof(NNET));
     //create neural network for backpropagation
-    createNeuronNetwork(Qnet, numberOfLayers, neuronsOfLayer);
+    // createNeuronNetwork(Qnet, numLayers, neuronsOfLayer);
 
     // SDL_Renderer *gfx = newWindow();		// create graphics window
 	}
@@ -68,14 +68,20 @@ double Q(double K[], double K2[])
 	for (int k = 0; k < dim_K; ++k)
 		{
 		K12[k]		   = K[k];
-		K12[k + dim_K] = K1[k];
+		K12[k + dim_K] = K2[k];
 		}
 
-	forward_prop(Qnet, dim_K * 2, K12);
+	// forward_prop(Qnet, dim_K * 2, K12);
 
-	#define LastLayer (numberOfLayers - 1)
+	#define numLayers 3
+	#define LastLayer (numLayers - 1)
 	// The last layer has only 1 neuron, which outputs the Q value:
 	return Qnet->layers[LastLayer].neurons[0].output;
+	}
+
+double norm(double grad[])
+	{
+	return 0.0;  // dummy TO-DO
 	}
 
 // (Part 1) Q-acting:
@@ -87,11 +93,11 @@ double Q(double K[], double K2[])
 double *Q_act(double K[])
 	{
 	double gradQ[dim_K];		// the gradient vector [∂Q/∂K2]
+	double K2[dim_K];
 
 	do		// While change is smaller than threshold
 		{
 		// start with a random K2
-
 
 		// Find steepest direction of dQ/dK2, using numerical differentiation.
 		#define delta	0.01
@@ -108,10 +114,12 @@ double *Q_act(double K[])
 			}
 
 		// Move a little along the gradient direction.
-		#define Beta	0.01
+		#define Beta	0.01f
+		double newQ[dim_K];
 		for (int k = 0; k < dim_K; ++k)
-			Q[k] += Beta * gradQ[k];
+			newQ[k] += Beta * gradQ[k];
 		}
+	#define Epsilon 0.0
 	while (norm(gradQ) > Epsilon);
 
 	return K2;			// Optimal K2 value
@@ -119,9 +127,9 @@ double *Q_act(double K[])
 
 // Find maximum Q(K,K') value at state K, by varying K'.
 // Method: gradient descent, using numerical differentiation to find the gradient dQ/dK'.
-double *maxQ(double K[])
+double maxQ(double K[])
 	{
-
+	return NULL;	// dummy
 	}
 
 // (Part 2) Q-learning:
@@ -137,20 +145,15 @@ void Q_learn(double K1[], double K2[], double R, double oldQ)
 	#define Eta		0.1
 
 	// Calculate ΔQ = η { R + γ max_a Q(K2,a) }
-	double maxQ = maxQ(K2);
-	double dQ[dim_K];
-	for (k = 0; k < dim_K; ++k)
-		dQ[k] = Eta * ( R + Gamma * maxQ[k] );
+	double dQ = Eta * ( R + Gamma * maxQ(K2) );
 
 	// Adjust old Q value
-	for (int k = 0; k < dim_K; ++k)
-		oldQ[k] += dQ[k];
+	oldQ += dQ;
 	// Use dQ as the error for back-prop
-	#define LastLayer (numberOfLayers - 1)
-    for (int i = 0; i < Qnet->layers[LastLayer].numberOfNeurons; i++)
-    	Qnet->layers[LastLayer].neurons[i].error = dQ[i];
+    Qnet->layers[LastLayer].neurons[0].error = dQ;
 
 	// Invoke back-prop a few times (perhaps this would make the learning effect stronger?)
 	for (int i = 0; i < 5; ++i)
-		backpropagation(Qnet);
+		;
+		// backpropagation(Qnet);
 	}

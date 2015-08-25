@@ -1,9 +1,9 @@
 # depslib dependency file v1.0
-1440248447 source:/home/yky/genifer/genifer5C/main.c
+1440521902 source:/home/yky/genifer/genifer5C/main.c
 	<stdio.h>
 	<stdlib.h>
-	<locale.h>
-	<wchar.h>
+	<SDL2/SDL.h>
+	"RNN.h"
 
 1440322989 source:/home/yky/genifer/genifer5C/genifer5c.c
 	<stdio.h>
@@ -15,12 +15,12 @@
 	<SDL2/SDL.h>
 	"RNN.h"
 
-1440249328 source:/home/yky/genifer/genifer5C/graphics.c
+1440519268 source:/home/yky/genifer/genifer5C/graphics.c
 	<stdbool.h>
 	<SDL2/SDL.h>
 	"RNN.h"
 
-1440330694 /home/yky/genifer/genifer5C/RNN.h
+1440519862 /home/yky/genifer/genifer5C/RNN.h
 
 1440242666 source:/home/yky/genifer/genifer5C/main.cpp
 	<stdio.h>
@@ -36,5 +36,29 @@
 	<assert.h>
 	<time.h>
 	<SDL2/SDL.h>
+	"RNN.h"
+
+1440519342 source:/home/yky/genifer/genifer5C/back-prop.c
+	<stdio.h>
+	<stdlib.h>
+	<stdbool.h>
+	<math.h>
+	<assert.h>
+	<time.h>
+	"RNN.h"
+
+1440496838 source:/home/yky/genifer/genifer5C/Chinese-test.c
+	<stdio.h>
+	<stdlib.h>
+	<locale.h>
+	<wchar.h>
+
+1440521732 source:/home/yky/genifer/genifer5C/Q-learning.c
+	<stdio.h>
+	<stdlib.h>
+	<stdbool.h>
+	<math.h>
+	<assert.h>
+	<time.h>
 	"RNN.h"
 

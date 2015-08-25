@@ -13,7 +13,6 @@
 #include <math.h>
 #include <assert.h>
 #include <time.h>
-#include <SDL2/SDL.h>
 
 #include "RNN.h"
 
@@ -26,10 +25,10 @@
 //********sigmoid function and randomWeight generator********************//
 
 double sigmoid(double v)
-    return 1 / (1 + exp(-v));
+	{ return 1 / (1 + exp(-v)); }
 
 double randomWeight()	// generate random weight between [+2,-2]
-    return (rand() / (float) RAND_MAX) * 4.0 - 2.0;
+    { return (rand() / (float) RAND_MAX) * 4.0 - 2.0; }
 
 //****************************create neuron network*********************//
 

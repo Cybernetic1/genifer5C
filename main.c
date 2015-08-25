@@ -1,6 +1,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <SDL2/SDL.h>
+
+#include "RNN.h"
+
+extern void Q_learn(double *, double *, double, double);
+extern double *Q_act(double *);
+extern void forward_prop(NNET *, int, double *);
 
 //************************** training data ***********************//
 // Each entry of training data consists of a K input value and a desired K
@@ -53,14 +60,19 @@ void read_trainers()
 //		Invoke Q-learning, using the reward to update Q
 // Repeat
 
+NNET *Net;
+
+#define LastLayer (numLayers - 1)
+
 int train()
 	{
-    NNET *Net = (NNET *)malloc(sizeof(NNET));
+    Net = (NNET *)malloc(sizeof(NNET));
     int numLayers = 4;
     //the first layer -- input layer
     //the last layer -- output layer
     // int neuronsOfLayer[5] = {2, 3, 4, 4, 4};
     int neuronsOfLayer[4] = {10, 14, 13, 10};
+	double *K2;
 
     //read training data and testing data from file
     read_trainers();
@@ -69,6 +81,7 @@ int train()
     create_NN(Net, numLayers, neuronsOfLayer);
 
     //error array to keep track of errors
+    #define MAX_EPOCHS 30
     double error[MAX_EPOCHS];
     int maxlen = 0;
     int epoch = 1;
@@ -92,6 +105,7 @@ int train()
 				K[k] = trainingIN[i][k];
 
 			// Let RNN act on K n times (TO-DO: is this really meaningful?)
+			#define RECURRENCE 10
 			for (int j = 0; j < RECURRENCE; j++)
 				{
 				forward_prop(Net, dim_K, K);
@@ -108,10 +122,13 @@ int train()
 		// ----- RL part -----
 
 		// Use Q value to choose an optimal action, taking K to K2.
-		double K2[dim_K] = Q_act(K);
+		// K2 = Q_act(K);
+		Q_act(K);
 
 		// Invoke Q-learning, using the reward to update Q
-		Q_learn(K, K2, R, oldQ);
+		double R = 0.0;	// dummy, TO-DO
+		double oldQ = 0.0; // dummy, TO-DO
+		// Q_learn(K, K2, R, oldQ);
 
         // error[maxlen] = sqrt(squareErrorSum / DATASIZE);
         //test network
@@ -140,11 +157,34 @@ int train()
     return 0;
 	}
 
+// Randomly generate an RNN, watch it operate on K and see how K moves
+void test_K_wandering()
+	{
+    Net = (NNET *) malloc(sizeof(NNET));
+    int numLayers = 4;
+    int neuronsOfLayer[4] = {10, 14, 13, 10};	// first = input layer, last = output layer
+
+	for (int j = 0; j < 30; j++)
+		{
+		forward_prop(Net, dim_K, K);
+
+		// copy output to input
+		for (int k = 0; k < dim_K; ++k)
+			{
+			K[k] = Net->layers[LastLayer].neurons[k].output;
+			printf("%lf\t", K[k]);
+			}
+		printf("\n");
+		}
+	}
+
 //**************************main function***********************//
 
 int main(int argc, char** argv)
 	{
 	printf("*** Welcome to Genifer 5.3 ***\n\n");
+
+	test_K_wandering();
 
 	return 0;
 	}

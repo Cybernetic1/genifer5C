@@ -60,9 +60,9 @@ void drawNetwork(NNET *net, SDL_Renderer* gRenderer) {
 
     int bwh = 20; /* neuron block width,height*/
 
-    int numLayers = net->numberOfLayers;
+    int numLayers = net->numLayers;
     for (int l = 0; l < numLayers; l++) {
-        int nn = net->layers[l].numberOfNeurons;
+        int nn = net->layers[l].numNeurons;
         for (int n = 0; n < nn; n++) {
 
             NEURON neuron = net->layers[l].neurons[n];
