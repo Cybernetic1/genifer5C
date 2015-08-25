@@ -34,6 +34,7 @@
 		<Unit filename="Chinese-test.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="Q-learn.h" />
 		<Unit filename="Q-learning.c">
 			<Option compilerVar="CPP" />
 		</Unit>

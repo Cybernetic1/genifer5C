@@ -28,7 +28,7 @@ double sigmoid(double v)
 	{ return 1 / (1 + exp(-v)); }
 
 double randomWeight()	// generate random weight between [+2,-2]
-    { return (rand() / (float) RAND_MAX) * 4.0 - 2.0; }
+    { return (rand() / (float) RAND_MAX) * 20.0 - 10.0; }
 
 //****************************create neuron network*********************//
 

@@ -1,9 +1,10 @@
 # depslib dependency file v1.0
-1440521902 source:/home/yky/genifer/genifer5C/main.c
+1440528498 source:/home/yky/genifer/genifer5C/main.c
 	<stdio.h>
 	<stdlib.h>
 	<SDL2/SDL.h>
 	"RNN.h"
+	"Q-learn.h"
 
 1440322989 source:/home/yky/genifer/genifer5C/genifer5c.c
 	<stdio.h>
@@ -53,7 +54,7 @@
 	<locale.h>
 	<wchar.h>
 
-1440521732 source:/home/yky/genifer/genifer5C/Q-learning.c
+1440524523 source:/home/yky/genifer/genifer5C/Q-learning.c
 	<stdio.h>
 	<stdlib.h>
 	<stdbool.h>
@@ -61,4 +62,6 @@
 	<assert.h>
 	<time.h>
 	"RNN.h"
+
+1440528518 /home/yky/genifer/genifer5C/Q-learn.h
 

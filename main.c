@@ -4,10 +4,7 @@
 #include <SDL2/SDL.h>
 
 #include "RNN.h"
-
-extern void Q_learn(double *, double *, double, double);
-extern double *Q_act(double *);
-extern void forward_prop(NNET *, int, double *);
+#include "Q-learn.h"
 
 //************************** training data ***********************//
 // Each entry of training data consists of a K input value and a desired K
@@ -161,21 +158,33 @@ int train()
 void test_K_wandering()
 	{
     Net = (NNET *) malloc(sizeof(NNET));
-    int numLayers = 4;
-    int neuronsOfLayer[4] = {10, 14, 13, 10};	// first = input layer, last = output layer
+    int numLayers = 3;
+    int neuronsOfLayer[3] = {10, 13, 10};	// first = input layer, last = output layer
 	create_NN(Net, numLayers, neuronsOfLayer);
+	double K2[dim_K];
 
-	for (int j = 0; j < 30; j++)
+	for (int j = 0; 1; j++)
 		{
 		forward_prop(Net, dim_K, K);
+
+		printf("%02d: ", j);
+		double d = 0.0;
 
 		// copy output to input
 		for (int k = 0; k < dim_K; ++k)
 			{
+			K2[k] = K[k];
 			K[k] = Net->layers[LastLayer].neurons[k].output;
-			printf("%lf\t", K[k]);
+			printf("%0.4lf ", K[k]);
+			double err = (K2[k] - K[k]);
+			d += (err * err);
 			}
 		printf("\n");
+		if (d < 0.000001)
+			{
+			printf("j = %d\t delta = %lf\n", j, d);
+			break;
+			}
 		}
 	}
 
@@ -183,7 +192,7 @@ void test_K_wandering()
 
 int main(int argc, char** argv)
 	{
-	printf("*** Welcome to Genifer 5.3 ***\n\n");
+	// printf("*** Welcome to Genifer 5.3 ***\n\n");
 
 	test_K_wandering();
 
