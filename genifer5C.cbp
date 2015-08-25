@@ -31,6 +31,9 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="Chinese-test.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="Q-learning.c">
 			<Option compilerVar="CPP" />
 		</Unit>
@@ -43,6 +46,7 @@
 		</Unit>
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
+			<Option weight="0" />
 		</Unit>
 		<Extensions>
 			<code_completion />

@@ -129,7 +129,7 @@ double *Q_act(double K[])
 // Method: gradient descent, using numerical differentiation to find the gradient dQ/dK'.
 double maxQ(double K[])
 	{
-	return NULL;	// dummy
+	return 0.0;	// dummy
 	}
 
 // (Part 2) Q-learning:
