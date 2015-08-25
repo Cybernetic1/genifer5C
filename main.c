@@ -1,106 +1,150 @@
-// Train Genifer to convert Chinese texts to Cantonese texts
-// ==========================================================
-// Cantonese is a dialect of Chinese very close to standard Chinese, so only minor
-// transliterations are required to turn Chinese into Cantonese.
-
-// TO-DO:
-// 1. structure of K is fixed: K = in-word, in-strength, speak-strength, internal, out-word
-// 2.
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <locale.h>
-#include <wchar.h>
 
-// List of Chinese characters that are recognized by the system
-// Chinese characters not in these lists are considered "don't care"
-wchar_t inChars[1024] = L"";
-wchar_t outChars[1024] = L"";
-// index to the above arrays
-int inCharsNum = 0;
-int outCharsNum = 0;
+//************************** training data ***********************//
+// Each entry of training data consists of a K input value and a desired K
+// output value.
 
-// *******************read training data and testing data**********************
+#define DATASIZE 100	// number of training / testing examples
 
-void addInChars(wchar_t *newStr)
+double trainingIN[DATASIZE][dim_K];
+double trainingOUT[DATASIZE][dim_K];
+
+double testingIN[DATASIZE][dim_K];
+double testingOUT[DATASIZE][dim_K];
+
+void read_trainers()
 	{
-	for (int i = 0; i < wcslen(newStr); ++i)
-		{
-		wchar_t c = newStr[i];
-		if (wcschr(inChars, c) == NULL)
+	//open training file
+	FILE *fp1, *fp2, *fp3, *fp4;
+
+    if ((fp1 = fopen("training-set-in.txt", "r")) == NULL)
+		{ fprintf(stderr, "Cannot open training-set-in.\n"); exit(1); }
+    if ((fp2 = fopen("training-set-out.txt", "r")) == NULL)
+		{ fprintf(stderr, "Cannot open training-set-out.\n"); exit(1); }
+    if ((fp3 = fopen("testing-set-in.txt", "r")) == NULL)
+		{ fprintf(stderr, "Cannot open testing-set-in.\n"); exit(1); }
+    if ((fp4 = fopen("testing-set-out.txt", "r")) == NULL)
+		{ fprintf(stderr, "Cannot open testing-set-out.\n"); exit(1); }
+
+	for (int i = 0; i < DATASIZE; ++i)
+		for (int j = 0; j < dim_K; ++j)
 			{
-			inChars[inCharsNum] = c;
-			inCharsNum++;
-			inChars[inCharsNum] = '\0';
+			fscanf(fp1, "%lf", &trainingIN[i][j]);
+			fscanf(fp2, "%lf", &trainingOUT[i][j]);
+			fscanf(fp3, "%lf", &testingIN[i][j]);
+			fscanf(fp4, "%lf", &testingOUT[i][j]);
 			}
-		}
+
+	fclose(fp1); fclose(fp2); fclose(fp3); fclose(fp4);
 	}
 
-void addOutChars(wchar_t *newStr)
+//**************************main algorithm***********************//
+// Main loop:
+// 		----- RNN part -----
+//		Input is copied into K.
+//		Desired output is K*.
+//		Do forward propagation (recurrently) a few times.
+//		Output is K'.  Error is K'-K*.
+//		Use back-prop to reduce this error.
+//		----- RL part -----
+//		Use Q value to choose an optimal action, taking K' to K''.
+//		Invoke Q-learning, using the reward to update Q
+// Repeat
+
+int train()
 	{
-	for (int i = 0; i < wcslen(newStr); ++i)
+    NNET *Net = (NNET *)malloc(sizeof(NNET));
+    int numLayers = 4;
+    //the first layer -- input layer
+    //the last layer -- output layer
+    // int neuronsOfLayer[5] = {2, 3, 4, 4, 4};
+    int neuronsOfLayer[4] = {10, 14, 13, 10};
+
+    //read training data and testing data from file
+    read_trainers();
+
+    //create neural network for backpropagation
+    create_NN(Net, numLayers, neuronsOfLayer);
+
+    //error array to keep track of errors
+    double error[MAX_EPOCHS];
+    int maxlen = 0;
+    int epoch = 1;
+
+    SDL_Renderer *gfx = newWindow();		// create graphics window
+
+    //output data to a file
+    FILE *fout;
+    if ((fout = fopen("randomtest-1.txt", "w")) == NULL)
+		{ fprintf(stderr, "file open failed.\n"); exit(1); }
+
+    do		// Loop over all epochs
 		{
-		wchar_t c = newStr[i];
-		if (wcschr(outChars, c) == NULL)
+        // double squareErrorSum = 0;
+
+		// Loop over all training data
+		for (int i = 0; i < DATASIZE; ++i)
 			{
-			outChars[outCharsNum] = c;
-			outCharsNum++;
-			outChars[outCharsNum] = '\0';
+			// Write input value to K
+			for (int k = 0; k < dim_K; ++k)
+				K[k] = trainingIN[i][k];
+
+			// Let RNN act on K n times (TO-DO: is this really meaningful?)
+			for (int j = 0; j < RECURRENCE; j++)
+				{
+				forward_prop(Net, dim_K, K);
+
+				calc_error(Net, trainingOUT[i]);
+				back_prop(Net);
+
+				// copy output to input
+				for (int k = 0; k < dim_K; ++k)
+					K[k] = Net->layers[LastLayer].neurons[k].output;
+				}
 			}
+
+		// ----- RL part -----
+
+		// Use Q value to choose an optimal action, taking K to K2.
+		double K2[dim_K] = Q_act(K);
+
+		// Invoke Q-learning, using the reward to update Q
+		Q_learn(K, K2, R, oldQ);
+
+        // error[maxlen] = sqrt(squareErrorSum / DATASIZE);
+        //test network
+        // printf(		  "%d  \t %lf\t %lf\n", epoch, 0.0f);
+        printf("%03d:", epoch);
+        for (int i = 0; i < dim_K; ++i)
+            printf(" %lf", K[i]);
+        printf("\n");
+        // fprintf(fout, "%d", epoch);
+        maxlen++;
+        epoch++;
+
+        drawNetwork(Net, gfx);
+        SDL_Delay(1000 /* milliseconds*/);
+
 		}
-	}
+    while(maxlen < MAX_EPOCHS);
 
-void find_unique_chars()
-	{
-	wchar_t s[1024];
+    fclose(fout);
+    free(Net);
+    extern NNET *Qnet;
+    free(Qnet);
 
-	wprintf(L"Finding unique characters...\n");
+    plot_rectangles(gfx); //keep the window open
 
-	FILE *fp1;
-	if((fp1 = fopen("/home/yky/NetBeansProjects/conceptual-keyboard/training-set.txt", "r")) == NULL)
-		{
-		printf("cannot open training-set.txt\n");
-		exit(1);
-		}
-
-	while (fwscanf(fp1, L"%S", s) > 0) {
-		wprintf(s);
-		wprintf(L"\n");
-		addInChars(s);
-
-		fwscanf(fp1, L"%S", s);
-		wprintf(s);
-		wprintf(L"\n");
-		addOutChars(s);
-		}
-
-	fclose(fp1);
-
-	wprintf(inChars);
-	wprintf(L"\n");
-	wprintf(outChars);
-	wprintf(L"\n");
+    return 0;
 	}
 
 //**************************main function***********************//
 
 int main(int argc, char** argv)
 	{
-    setlocale(LC_ALL, "");
-	wprintf(L"*** 欢迎使用珍妮花 5.3 ***\n\n");		// "Welcome to Genifer 5.3"
-
-	find_unique_chars();
-
-	/*output data to a file
-	FILE *fout;
-	if ((fout = fopen("randomtest_1.txt", "w")) == NULL)
-		{
-		fprintf(stderr, "file open failed.\n");
-		exit(1);
-		}
-
-	fclose(fout);
-	*/
+	printf("*** Welcome to Genifer 5.3 ***\n\n");
 
 	return 0;
 	}

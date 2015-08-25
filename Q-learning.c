@@ -22,15 +22,10 @@
 #include "RNN.h"
 
 extern double sigmoid(double v);
-
 extern double randomWeight();
-
 extern void createNeuronNetwork(NNET *net, int numberOfLayers, int *neuronsOfLayer);
-
 extern void feedforward(NNET *net, double *K);
-
 extern double calculateError(NNET *net, double *Y);
-
 extern void backpropagation(NNET *net);
 
 //************************** prepare Q-net ***********************//
@@ -65,25 +60,71 @@ void init_Qlearn()
 // Thus we use back-prop to adjust the weights in Q-net to achieve this.
 // ==============================================================
 
-// (Part 1) Acting:
-// Find K' that maximizes Q(K,K')
-// Method: numerical differentiation to find gradient of dQ/dW, where W = weights.
-//		   Perhaps with multiple random restarts
-void Q_act(double K[])
+// Finds Q value by forward-propagation
+double Q(double K[], double K2[])
 	{
-	// Find steepest direction of dQ/dW.
+	// For input, we need to combine K1 and K2 into a single vector
+	double K12[dim_K * 2];
+	for (int k = 0; k < dim_K; ++k)
+		{
+		K12[k]		   = K[k];
+		K12[k + dim_K] = K1[k];
+		}
 
-	// Go that direction a bit.
+	forward_prop(Qnet, dim_K * 2, K12);
 
-	// If change is smaller than threshold then stop, return optimal K'.
+	#define LastLayer (numberOfLayers - 1)
+	// The last layer has only 1 neuron, which outputs the Q value:
+	return Qnet->layers[LastLayer].neurons[0].output;
 	}
 
-// Find maximum Q value at state K
-double *find_maxQ(double K[])
+// (Part 1) Q-acting:
+// Find K2 that maximizes Q(K,K2).  Q is a real number.
+// Method: numerical differentiation to find the gradient ∇Q = [∂Q/∂K2] which is a vector.
+//		The approximation formula for each component of ∂Q/∂K2 is:  (subscripts omitted)
+//			∂Q/∂K2 ≈ { Q(K2 + δ) - Q(K2 - δ) } /2δ
+// TO-DO: Perhaps with multiple random restarts
+double *Q_act(double K[])
 	{
+	double gradQ[dim_K];		// the gradient vector [∂Q/∂K2]
+
+	do		// While change is smaller than threshold
+		{
+		// start with a random K2
+
+
+		// Find steepest direction of dQ/dK2, using numerical differentiation.
+		#define delta	0.01
+		for (int k = 0; k < dim_K; ++k)
+			{
+			// Create 2 copies of K2, whose k-th component is added / subtracted with δ
+			double K2plus[dim_K], K2minus[dim_K];
+			for (int k2 = 0; k2 < dim_K; ++k2)
+				K2plus[k2] = K2minus[k2] = K2[k2];
+			K2plus[k] += delta;
+			K2minus[k] -= delta;
+
+			gradQ[k] = (Q(K, K2plus) - Q(K, K2minus)) / 2 / delta;
+			}
+
+		// Move a little along the gradient direction.
+		#define Beta	0.01
+		for (int k = 0; k < dim_K; ++k)
+			Q[k] += Beta * gradQ[k];
+		}
+	while (norm(gradQ) > Epsilon);
+
+	return K2;			// Optimal K2 value
 	}
 
-// (Part 2) Learning:
+// Find maximum Q(K,K') value at state K, by varying K'.
+// Method: gradient descent, using numerical differentiation to find the gradient dQ/dK'.
+double *maxQ(double K[])
+	{
+
+	}
+
+// (Part 2) Q-learning:
 // Invoke ordinary back-prop to learn Q.
 // On entry, we have just made a transition K1 -> K2 with maximal Q(K1, a: K1->K2)
 // and gotten a reward R(K1->K2).
@@ -96,10 +137,10 @@ void Q_learn(double K1[], double K2[], double R, double oldQ)
 	#define Eta		0.1
 
 	// Calculate ΔQ = η { R + γ max_a Q(K2,a) }
-	double maxQ = find_maxQ(K2);
+	double maxQ = maxQ(K2);
 	double dQ[dim_K];
 	for (k = 0; k < dim_K; ++k)
-		dQ[k] = Eta * (R + Gamma * maxQ[k] );
+		dQ[k] = Eta * ( R + Gamma * maxQ[k] );
 
 	// Adjust old Q value
 	for (int k = 0; k < dim_K; ++k)

@@ -31,7 +31,17 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="genifer5c.c">
+		<Unit filename="Q-learning.c">
+			<Option compilerVar="CPP" />
+		</Unit>
+		<Unit filename="RNN.h" />
+		<Unit filename="back-prop.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="graphics.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions>
