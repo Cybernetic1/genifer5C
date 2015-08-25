@@ -163,6 +163,7 @@ void test_K_wandering()
     Net = (NNET *) malloc(sizeof(NNET));
     int numLayers = 4;
     int neuronsOfLayer[4] = {10, 14, 13, 10};	// first = input layer, last = output layer
+	create_NN(Net, numLayers, neuronsOfLayer);
 
 	for (int j = 0; j < 30; j++)
 		{
