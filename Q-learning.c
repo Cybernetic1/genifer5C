@@ -23,10 +23,10 @@
 
 extern double sigmoid(double v);
 extern double randomWeight();
-extern void createNeuronNetwork(NNET *net, int numberOfLayers, int *neuronsOfLayer);
+extern void create_NN(NNET *net, int numberOfLayers, int *neuronsOfLayer);
 extern void forward_prop(NNET *, int, double *);
-extern double calculateError(NNET *net, double *Y);
-extern void backpropagation(NNET *);
+extern double calc_error(NNET *net, double *Y);
+extern void back_prop(NNET *);
 
 //************************** prepare Q-net ***********************//
 NNET *Qnet;
@@ -41,7 +41,7 @@ void init_Qlearn()
 
 	Qnet = (NNET*) malloc(sizeof(NNET));
     //create neural network for backpropagation
-    createNeuronNetwork(Qnet, numLayers, neuronsOfLayer);
+    create_NN(Qnet, numLayers, neuronsOfLayer);
 
     // SDL_Renderer *gfx = newWindow();		// create graphics window
 	}
@@ -154,5 +154,5 @@ void Q_learn(double K1[], double K2[], double R, double oldQ)
 
 	// Invoke back-prop a few times (perhaps this would make the learning effect stronger?)
 	for (int i = 0; i < 5; ++i)
-		backpropagation(Qnet);
+		back_prop(Qnet);
 	}
