@@ -41,7 +41,7 @@ void init_Qlearn()
 
 	Qnet = (NNET*) malloc(sizeof(NNET));
     //create neural network for backpropagation
-    // createNeuronNetwork(Qnet, numLayers, neuronsOfLayer);
+    createNeuronNetwork(Qnet, numLayers, neuronsOfLayer);
 
     // SDL_Renderer *gfx = newWindow();		// create graphics window
 	}
@@ -154,6 +154,5 @@ void Q_learn(double K1[], double K2[], double R, double oldQ)
 
 	// Invoke back-prop a few times (perhaps this would make the learning effect stronger?)
 	for (int i = 0; i < 5; ++i)
-		;
-		// backpropagation(Qnet);
+		backpropagation(Qnet);
 	}

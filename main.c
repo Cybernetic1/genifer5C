@@ -122,13 +122,13 @@ int train()
 		// ----- RL part -----
 
 		// Use Q value to choose an optimal action, taking K to K2.
-		// K2 = Q_act(K);
-		Q_act(K);
+		K2 = Q_act(K);
+		// Q_act(K);
 
 		// Invoke Q-learning, using the reward to update Q
 		double R = 0.0;	// dummy, TO-DO
 		double oldQ = 0.0; // dummy, TO-DO
-		// Q_learn(K, K2, R, oldQ);
+		Q_learn(K, K2, R, oldQ);
 
         // error[maxlen] = sqrt(squareErrorSum / DATASIZE);
         //test network
