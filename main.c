@@ -4,8 +4,16 @@
 #include <SDL2/SDL.h>
 
 #include "RNN.h"
-#include "Q-learn.h"
 
+extern void create_NN(NNET *, int, int *);
+extern void Q_learn(double *, double *, double, double);
+extern double *Q_act(double *, double *);
+extern void forward_prop(NNET *, int, double *);
+extern double calc_error(NNET *, double []);
+extern void back_prop(NNET *);
+extern void drawNetwork(NNET *, SDL_Renderer*);
+extern void plot_rectangles(SDL_Renderer*);
+	
 //************************** training data ***********************//
 // Each entry of training data consists of a K input value and a desired K
 // output value.
@@ -83,6 +91,7 @@ int train()
     int maxlen = 0;
     int epoch = 1;
 
+	extern SDL_Renderer *newWindow(void);
     SDL_Renderer *gfx = newWindow();		// create graphics window
 
     //output data to a file
@@ -119,8 +128,7 @@ int train()
 		// ----- RL part -----
 
 		// Use Q value to choose an optimal action, taking K to K2.
-		K2 = Q_act(K);
-		// Q_act(K);
+		Q_act(K, K2);
 
 		// Invoke Q-learning, using the reward to update Q
 		double R = 0.0;	// dummy, TO-DO

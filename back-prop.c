@@ -28,7 +28,7 @@ double sigmoid(double v)
 	{ return 1 / (1 + exp(-v)) - 0.5; }
 
 double randomWeight()	// generate random weight between [+2,-2]
-    { return (rand() / (float) RAND_MAX) * 6.0 - 3; }
+    { return (rand() / (float) RAND_MAX) * 4.0 - 2.0; }
 
 //****************************create neuron network*********************//
 
@@ -75,7 +75,8 @@ void forward_prop(NNET *net, int dim_V, double V[])
     for (int i = 0; i < dim_V; ++i)
         net->layers[0].neurons[i].output = V[i];
 
-    for (int i = 1; i < net->numLayers; i++)	//calculate output from hidden layers to output layer
+	//calculate output from hidden layers to output layer
+    for (int i = 1; i < net->numLayers; i++)
 		{
         for (int j = 0; j < net->layers[i].numNeurons; j++)
 			{
@@ -89,10 +90,16 @@ void forward_prop(NNET *net, int dim_V, double V[])
                     v += net->layers[i].neurons[j].weights[k] * net->layers[i - 1].neurons[k - 1].output;
 				}
 
-            net->layers[i].neurons[j].output = sigmoid(v);
+			// For the last layer, skip the sigmoid function
+			if (i == net->numLayers - 1)
+				net->layers[i].neurons[j].output = v;
+			else
+				net->layers[i].neurons[j].output = sigmoid(v);
 			}
 		}
 	}
+
+#define LastLayer (net->layers[numLayers - 1])
 
 // Calculate error between output of forward-prop and a given answer Y
 double calc_error(NNET *net, double Y[])
@@ -103,22 +110,21 @@ double calc_error(NNET *net, double Y[])
 
     int numLayers = net->numLayers;
     // This means each output neuron corresponds to a classification label --YKY
-    #define LastLayer (numLayers - 1)
-    for (int i = 0; i < net->layers[LastLayer].numNeurons; i++)
+    for (int i = 0; i < LastLayer.numNeurons; i++)
     	{
     	//error = desired_value - output
-    	double error = Y[i] - net->layers[LastLayer].neurons[i].output;
-    	net->layers[LastLayer].neurons[i].error = error;
+    	double error = Y[i] - LastLayer.neurons[i].output;
+    	LastLayer.neurons[i].error = error;
     	sumOfSquareError += error * error / 2;
     	}
-    double mse = sumOfSquareError / net->layers[LastLayer].numNeurons;
+    double mse = sumOfSquareError / LastLayer.numNeurons;
     return mse;	 //return the root of mean square error
 	}
 
 
 //**************************backpropagation***********************//
 
-#define LastLayer (numLayers - 1)
+#define LastLayer (net->layers[numLayers - 1])
 
 void back_prop(NNET *net)
 	{
@@ -127,12 +133,12 @@ void back_prop(NNET *net)
     int numLayers = net->numLayers;
 
     //calculate delta for output layer
-    for (i = 0; i < net->layers[LastLayer].numNeurons; i++)
+    for (i = 0; i < LastLayer.numNeurons; i++)
 		{
-        double output = net->layers[LastLayer].neurons[i].output;
-        double error = net->layers[LastLayer].neurons[i].error;
+        double output = LastLayer.neurons[i].output;
+        double error = LastLayer.neurons[i].error;
         //for output layer, delta = y(1-y)error
-        net->layers[LastLayer].neurons[i].delta = output * (1 - output) * error;
+        LastLayer.neurons[i].delta = output * (1 - output) * error;
 		}
 
     //calculate delta for hidden layers

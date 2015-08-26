@@ -90,10 +90,9 @@ double norm(double grad[])
 //		The approximation formula for each component of ∂Q/∂K2 is:  (subscripts omitted)
 //			∂Q/∂K2 ≈ { Q(K2 + δ) - Q(K2 - δ) } /2δ
 // TO-DO: Perhaps with multiple random restarts
-double *Q_act(double K[])
+double *Q_act(double K[], double K2[])
 	{
 	double gradQ[dim_K];		// the gradient vector [∂Q/∂K2]
-	double K2[dim_K];
 
 	do		// While change is smaller than threshold
 		{
@@ -122,7 +121,7 @@ double *Q_act(double K[])
 	#define Epsilon 0.0
 	while (norm(gradQ) > Epsilon);
 
-	return K2;			// Optimal K2 value
+	// Return with optimal K2 value
 	}
 
 // Find maximum Q(K,K') value at state K, by varying K'.

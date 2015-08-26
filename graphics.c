@@ -43,14 +43,14 @@ SDL_Renderer *newWindow(void) {
 
 #define f2i(v) ((int)(256.0*v))
 
-void rect(SDL_Renderer* gfx, int x, int y, int w, int h, float r, float g, float b) {
-    rectI(gfx, x, y, w, h, f2i(r), f2i(g), f2i(b) );
-}
-
 void rectI(SDL_Renderer* gfx, int x, int y, int w, int h, int r, int g, int b) {
     SDL_Rect fillRect = { x, y, w, h };
     SDL_SetRenderDrawColor( gfx, r, g, b, 0xFF );
     SDL_RenderFillRect( gfx, &fillRect );
+}
+
+void rect(SDL_Renderer* gfx, int x, int y, int w, int h, float r, float g, float b) {
+    rectI(gfx, x, y, w, h, f2i(r), f2i(g), f2i(b) );
 }
 
 void drawNetwork(NNET *net, SDL_Renderer* gRenderer) {
