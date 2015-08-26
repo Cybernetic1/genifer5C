@@ -44,7 +44,7 @@ void read_trainers()
 	fclose(fp1); fclose(fp2); fclose(fp3); fclose(fp4);
 	}
 
-//**************************main algorithm***********************//
+//************************** main algorithm ***********************//
 // Main loop:
 // 		----- RNN part -----
 //		Input is copied into K.
@@ -167,7 +167,7 @@ void test_K_wandering()
 		{
 		forward_prop(Net, dim_K, K);
 
-		printf("%02d: ", j);
+		printf("%02d", j);
 		double d = 0.0;
 
 		// copy output to input
@@ -175,24 +175,24 @@ void test_K_wandering()
 			{
 			K2[k] = K[k];
 			K[k] = Net->layers[LastLayer].neurons[k].output;
-			printf("%0.4lf ", K[k]);
-			double err = (K2[k] - K[k]);
-			d += (err * err);
+			printf(", %0.4lf", K[k]);
+			double diff = (K2[k] - K[k]);
+			d += (diff * diff);
 			}
 		printf("\n");
 		if (d < 0.000001)
 			{
-			printf("j = %d\t delta = %lf\n", j, d);
+			fprintf(stderr, "j = %d\t delta = %lf\n", j, d);
 			break;
 			}
 		}
 	}
 
-//**************************main function***********************//
+//************************** Genifer main function ***********************//
 
 int main(int argc, char** argv)
 	{
-	// printf("*** Welcome to Genifer 5.3 ***\n\n");
+	printf("*** Welcome to Genifer 5.3 ***\n\n");
 
 	test_K_wandering();
 

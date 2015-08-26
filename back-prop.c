@@ -25,10 +25,10 @@
 //********sigmoid function and randomWeight generator********************//
 
 double sigmoid(double v)
-	{ return 1 / (1 + exp(-v)); }
+	{ return 1 / (1 + exp(-v)) - 0.5; }
 
 double randomWeight()	// generate random weight between [+2,-2]
-    { return (rand() / (float) RAND_MAX) * 20.0 - 10.0; }
+    { return (rand() / (float) RAND_MAX) * 6.0 - 3; }
 
 //****************************create neuron network*********************//
 
